@@ -14,6 +14,10 @@ inputs:
   gh_app_installation_id:
     description: 'GitHub Application intallation ID'
     required: true
+  base64:
+    description: 'Use base64 to encrypt token.'
+    default: 'false'
+    required: false
 outputs:
   token:
     value: ${{ steps.accessToken.outputs.GH_ACCESS_TOKEN_1H_EXPIRATION}}
@@ -27,7 +31,11 @@ runs:
         echo ${GH_APP_RELEASECREATOR_PRIV_KEY} | base64 -d > ./gh_app_priv_key.pem
         export PEM_FILE=./gh_app_priv_key.pem
         export GH_ACCESS_TOKEN_1H_EXPIRATION=$( python3 ./generate_gh_app_installation_token.py )
-        echo "GH_ACCESS_TOKEN_1H_EXPIRATION=$( echo ${GH_ACCESS_TOKEN_1H_EXPIRATION} | base64 )" >> "$GITHUB_OUTPUT"
+        if [[ ${IS_BASE64} == 'true' ]]; then
+          echo "GH_ACCESS_TOKEN_1H_EXPIRATION=$( echo ${GH_ACCESS_TOKEN_1H_EXPIRATION} | base64 )" >> "$GITHUB_OUTPUT"
+        else
+          echo "GH_ACCESS_TOKEN_1H_EXPIRATION=${GH_ACCESS_TOKEN_1H_EXPIRATION}" >> "$GITHUB_OUTPUT"
+        fi
         rm ./gh_app_priv_key.pem ./generate_gh_app_installation_token.py
         echo "Access token is ready."
       env:
@@ -35,4 +43,5 @@ runs:
         GH_APP_RELEASECREATOR_PRIV_KEY: ${{ inputs.gh_app_priv_key }}
         GH_APP_ID: ${{ inputs.gh_app_id }}
         GH_APP_INSTALLATION_ID: ${{ inputs.gh_app_installation_id }}
+        IS_BASE64: ${{ inputs.base64 }}
       shell: bash
