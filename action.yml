@@ -26,6 +26,7 @@ runs:
   steps:
     - id: accessToken
       run: |
+        set -e
         python3 --version
         python3 -m pip install jwt requests
         echo ${GH_APP_RELEASECREATOR_TOKEN_PYTHON_SCRIPT} | base64 -d > ./generate_gh_app_installation_token.py
