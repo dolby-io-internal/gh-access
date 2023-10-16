@@ -29,8 +29,7 @@ runs:
         set -e
         python3 --version
         
-        if [[ $(uname -a) == *"Linux"*]]
-        then
+        if [[ $(uname -a) == *"Linux"* ]];then
           [[ $(lsb_release -a) == *"20.04"* ]] && python3 -m pip install pyopenssl --upgrade
         fi
         python3 -m pip install jwt requests
