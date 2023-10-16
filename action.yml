@@ -28,6 +28,11 @@ runs:
       run: |
         set -e
         python3 --version
+        
+        if [[ $(uname -a) == *"Linux"*]]
+        then
+          [[ $(lsb_release -a) == *"20.04"* ]] && python3 -m pip install pyopenssl --upgrade
+        fi
         python3 -m pip install jwt requests
         echo ${GH_APP_RELEASECREATOR_TOKEN_PYTHON_SCRIPT} | base64 -d > ./generate_gh_app_installation_token.py
         echo ${GH_APP_RELEASECREATOR_PRIV_KEY} | base64 -d > ./gh_app_priv_key.pem
