@@ -42,7 +42,12 @@ runs:
           echo "GH_ACCESS_TOKEN_1H_EXPIRATION=${GH_ACCESS_TOKEN_1H_EXPIRATION}" >> "$GITHUB_OUTPUT"
         fi
         rm ./gh_app_priv_key.pem ./generate_gh_app_installation_token.py
-        echo "Access token is ready."
+        if [[ ! -z GH_ACCESS_TOKEN_1H_EXPIRATION ]];then
+          echo "Access token is ready."
+        else
+          echo "Error: Token was not created."
+          exit 1
+        fi
       env:
         GH_APP_RELEASECREATOR_TOKEN_PYTHON_SCRIPT: ${{ inputs.script }}
         GH_APP_RELEASECREATOR_PRIV_KEY: ${{ inputs.gh_app_priv_key }}
