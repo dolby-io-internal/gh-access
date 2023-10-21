@@ -1,0 +1,49 @@
+name: 'Create release'
+description: 'Create release'
+inputs:
+  access_token:
+    description: 'Access token.'
+    required: true
+  release_tag:
+    description: 'Define release tag.'
+    required: true
+  release_repository:
+    description: 'Define release repository.'
+    required: true
+  release_notes:
+    description: 'Add release notes.'
+    required: true
+  is_draft:
+    description: 'Create draft version.'
+    required: true
+    default: 'false'
+  is_prerelease:
+    description: 'Create prerelease.'
+    required: true
+    default: 'false'
+  generate_release_notes:
+    description: 'Enable automatic release notes generation.'
+    required: true
+    default: 'false'
+
+runs:
+  using: "composite"
+  steps:
+    - id: createRelease
+      run: |
+        curl -v -L -X POST \
+        -H "Accept: application/vnd.github+json" \
+        -H "Authorization: Bearer ${{ inputs.access_token }}" \
+        -H "X-GitHub-Api-Version: 2022-11-28" \
+        "https://api.github.com/repos/${{ inputs.release_repository }}/releases" \
+        -d '{"tag_name": "${{ inputs.release_tag }}","target_commitish": "${{ github.sha }}","name": "${{ inputs.release_tag }}","body": "${{ inputs.release_notes }}","draft": ${{ inputs.is_draft }},"prerelease": ${{ inputs.is_prerelease }},"generate_release_notes": ${{ inputs.generate_release_notes }}}' | jq > request_response.json
+        UPLOAD_URL=$(cat request_response.json | jq .upload_url | tr -d '"') && export GH_RELEASE_UPLOAD_URL=${UPLOAD_URL%%{*}
+        HTML_URL=$(cat request_response.json | jq .html_url | tr -d '"') && export GH_RELEASE_HTML_URL=${HTML_URL}
+        export IS_CURL_RESPONSE_ERROR=$(cat request_response.json | jq .message) && cat request_response.json && rm request_response.json
+        if [[ ${IS_CURL_RESPONSE_ERROR} != "null" ]];then
+          echo ${IS_CURL_RESPONSE_ERROR}
+          exit 1
+        fi
+        echo "RELEASE URL: $GH_RELEASE_HTML_URL :rocket:" >> $GITHUB_STEP_SUMMARY
+        echo "GH_RELEASE_UPLOAD_URL=${GH_RELEASE_UPLOAD_URL}" >> ${GITHUB_OUTPUT}
+      shell: bash
