@@ -53,6 +53,7 @@ for i in range(1,GH_API_CALL_ATTEMPTS):
 
         # Set output
         GITHUB_OUTPUT_FILE = os.environ['GITHUB_OUTPUT']
+
         with open(GITHUB_OUTPUT_FILE, 'a') as fd:
           fd.write(f"GH_ACCESS_TOKEN={access_token}")
 

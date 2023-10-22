@@ -14,28 +14,27 @@ inputs:
     description: 'Define the shell for commands.'
     required: false
     default: bash
+  cmd_python:
+    description: 'Define python | python3 for self-hosted runners.'
+    required: false
+    default: python3
 outputs:
   token:
     value: ${{ steps.accessToken.outputs.GH_ACCESS_TOKEN}}
 runs:
   using: "composite"
   steps:
-    - name: 'Checkout code'
-      uses: actions/checkout@v4
-      with:
-        path: gh-access
-
     - uses: actions/setup-python@v4
+      if: ${{ runner.environment == 'github-hosted' }}
       with:
         python-version: '3.11'
-        cache: 'pip'
 
     - name: 'Install dependencies'
-      run: python -m pip install -r requirements.txt
+      run: ${{ inputs.cmd_python }} -m pip install --no-cache-dir -r ${{ github.action_path }}/requirements.txt
       shell: ${{ inputs.shell }}
 
     - id: accessToken
-      run: python gh-access/generate_token.py
+      run: ${{ inputs.cmd_python }} ${{ github.action_path }}/generate_token.py
       env:
         PEM_B64: ${{ inputs.gh_app_priv_key }}
         GH_APP_ID: ${{ inputs.gh_app_id }}
